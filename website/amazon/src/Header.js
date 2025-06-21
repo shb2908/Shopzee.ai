@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react"; // Import useState
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -40,7 +40,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
@@ -51,6 +50,15 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 function Header() {
+  const [searchQuery, setSearchQuery] = useState(""); // State for search input
+
+  const handleSearch = (event) => {
+    event.preventDefault(); // Prevent default form submission
+    // Implement your search logic here
+    console.log("Searching for:", searchQuery);
+    // You can call a search function or update the state in a parent component
+  };
+
   return (
     <AppBar position="static" color="default" elevation={2} sx={{ background: "linear-gradient(90deg, #232526 0%, #414345 100%)" }}>
       <Toolbar>
@@ -64,12 +72,19 @@ function Header() {
             Amazon Adam
           </Typography>
         </Box>
-        <Search>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase placeholder="Search products…" inputProps={{ "aria-label": "search" }} />
-        </Search>
+        <form onSubmit={handleSearch}> {/* Add form for search */}
+          <Search>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Search products…"
+              inputProps={{ "aria-label": "search" }}
+              value={searchQuery} // Bind input value to state
+              onChange={(e) => setSearchQuery(e.target.value)} // Update state on input change
+            />
+          </Search>
+        </form>
         <Box sx={{ flexGrow: 1 }} />
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Button color="inherit" sx={{ color: "#fff", textTransform: "none", fontWeight: 500 }}>
