@@ -1,18 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./Home.css";
 import Product from "./Product";
 
 function Home() {
-  const [products, setProducts] = useState([]);
-
   return (
     <div className="Home">
       <div className="home-container">
-        <img
-          className="home-image"
-          src="https://images-eu.ssl-images-amazon.com/images/G/02/digital/video/merch2016/Hero/Covid19/Generic/GWBleedingHero_ENG_COVIDUPDATE__XSite_1500x600_PV_en-GB._CB428684220_.jpg"
-        />
-        <div className="home_row">
+        {/* Premium Hero Section */}
+        <section className="hero-section">
+          <img
+            className="home-image"
+            src="https://assets.aboutamazon.com/1d/ef/4c54af0d4f00921dbfc3bb11d1cc/aa-nov2024-profitero-deals-announcement-hero-v1-2000x1125.jpg"
+            alt="Premium Shopping Banner"
+          />
+          <div className="hero-overlay">
+            <h1 className="hero-title">Discover Premium Products</h1>
+            <p className="hero-subtitle">
+              Curated selection. Trusted brands. Unmatched quality.
+            </p>
+            <a href="#shop-now" className="hero-cta">
+              Shop Now
+            </a>
+          </div>
+        </section>
+
+        {/* Product Rows */}
+        <div className="home_row" id="shop-now">
           <Product
             title="In Ear Black-Red Earphones"
             price={49.99}
@@ -32,24 +45,22 @@ function Home() {
           <Product
             title="Portable Sub-Woofer"
             price={4.99}
-            image="https://m.media-amazon.com/images/I/71FER1UJhcL._AC_SL1500_.jpg "
+            image="https://m.media-amazon.com/images/I/71FER1UJhcL._AC_SL1500_.jpg"
             rating={1}
             className="fake-prod"
             Unique_product_id={4}
           />
-
           <Product
             title="Amazon Basics E-300 Headphones"
             price={70}
-            image="https://m.media-amazon.com/images/I/71VHRNgvpqL._AC_SL1500_.jpg "
+            image="https://m.media-amazon.com/images/I/71VHRNgvpqL._AC_SL1500_.jpg"
             rating={5}
             Unique_product_id={2}
           />
-
           <Product
             title="Xu Direct In Line Headphones"
             price={24.99}
-            image="https://m.media-amazon.com/images/I/71dtAOC-bLL._AC_SL1500_.jpg "
+            image="https://m.media-amazon.com/images/I/71dtAOC-bLL._AC_SL1500_.jpg"
             rating={4}
             Unique_product_id={3}
           />
@@ -59,7 +70,7 @@ function Home() {
             className="fake-prod"
             title="In Ear Earphones Black-Green"
             price={49.99}
-            image="https://m.media-amazon.com/images/I/618zves-P8L._AC_SL1500_.jpg "
+            image="https://m.media-amazon.com/images/I/618zves-P8L._AC_SL1500_.jpg"
             rating={4}
             Unique_product_id={1}
           />

@@ -1,4 +1,4 @@
-.Header {
+/* .Header {
   height: 60px;
   display: flex;
   align-items: center;
@@ -6,7 +6,22 @@
   position: sticky;
   top: 0;
   z-index: 100;
+} */
+
+.Header {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #232526 0%, #414345 100%), 
+    url('https://assets.aboutamazon.com/1d/ef/4c54af0d4f00921dbfc3bb11d1cc/aa-nov2024-profitero-deals-announcement-hero-v1-2000x1125.jpg') center/cover no-repeat;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 16px rgba(44,62,80,0.10);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
+
 .header_logo {
   width: 100px;
   object-fit: contain;

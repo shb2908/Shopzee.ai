@@ -5,6 +5,9 @@ import Productlisting from "./Productlisting";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import SerialVerification from "./SerialVerification.js";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
 
 function App() {
   const [data, setData] = useState([]);
@@ -23,21 +26,23 @@ function App() {
 
   return (
     <Router>
-      <div className="app">
-        <Header />
-        <Routes>
-          <Route
-            path="/serial-verification/:Unique_product_id"
-            element={<SerialVerification />}
-          />
-
-          <Route
-            path="/product/:Unique_product_id"
-            element={<Productlisting Data={data} />}
-          />
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </div>
+      <CssBaseline />
+      <Header />
+      <Container maxWidth="md">
+        <Box className="app" sx={{ mt: 4 }}>
+          <Routes>
+            <Route
+              path="/serial-verification/:Unique_product_id"
+              element={<SerialVerification />}
+            />
+            <Route
+              path="/product/:Unique_product_id"
+              element={<Productlisting Data={data} />}
+            />
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </Box>
+      </Container>
     </Router>
   );
 }
