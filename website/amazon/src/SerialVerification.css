@@ -1,0 +1,29 @@
+.serial-verification {
+  text-align: center;
+  padding: 20px;
+  color: black;
+}
+
+.serial-input {
+  padding: 10px;
+  margin: 10px 0;
+  width: 200px;
+}
+
+.verification-result {
+  font-size: 16px;
+  margin-top: 10px;
+  color: orange;
+}
+
+.valid {
+  color: green;
+}
+
+.invalid {
+  color: red;
+}
+.verify {
+  margin-left: 10px;
+  display: inline;
+}
