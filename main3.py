@@ -1,4 +1,5 @@
 #===================Importing dependencies=================================#
+#===================Importing dependencies=================================#
 import string
 import numpy as np
 import pandas as pd
@@ -39,11 +40,8 @@ import textstat
 
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import CLIPProcessor, CLIPModel
-from datasets import load_dataset
-from evaluate import load as load_metric
-from tensorflow.keras.callbacks import EarlyStopping
 
 import os
 from PIL import Image
@@ -60,7 +58,8 @@ This system integrates VLM and Llama-2 models to detect fake products and review
 2. SENTIMENT ANALYSIS: VADER sentiment scoring
 3. HELPFUL SCORE: User helpfulness metrics
 4. VLM (CLIP): Vision-Language Model for image analysis
-5. LLAMA-2: Large Language Model for advanced text analysis
+5. Time series analysis to detect spam reviews
+6. LLAMA-2: Large Language Model with a classifier head for sentiment analysis of reviews for authenticity check.
 
 The final score is a weighted combination of all these parameters.
 """
@@ -74,13 +73,10 @@ dfmain = dfmain[cols]
 
 #======================Parameter A: Verification Check=====================#
 verified = dfmain['verified']
-
 verified_dict = []
 for i in range(len(verified)):
     id = i
     verified_dict.append({'Id':id, 'verification_score':verified[i]})
-    
-
 verified = pd.DataFrame(verified_dict)
 verified['invert_verification_score'] = 1 - verified['verification_score']  # 0 for verified, 1 for not
 
@@ -95,13 +91,11 @@ for i in range(len(dfmain)):
     id = i
     Id.append(id)
     res[id] = sia.polarity_scores(text)
-
 dfmain['Id'] = range(len(dfmain))
 vaders_result = pd.DataFrame(res).T
 vaders_result['Id'] = range(len(dfmain))
 vaders_result = vaders_result.merge(dfmain, how='left')
-
-vaders_result['normalized_sentiment_score'] =  vaders_result['compound'].apply(lambda x: 1 if abs(x) > 0.85 else 0)
+vaders_result['normalized_sentiment_score'] = vaders_result['compound'].apply(lambda x: 1 if abs(x) > 0.85 else 0)
 
 #======================Parameter C: Helpful tag=========================================#
 scaler = MinMaxScaler()
@@ -133,11 +127,8 @@ def get_vlm_score(image_path, text_prompt="real product"):
     Returns a score between 0 and 1, where 1 indicates authentic product
     """
     try:
-        # Load CLIP model and processor
         clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-        
-        # Load and process image
         image = Image.open(image_path).convert("RGB")
         inputs = processor(
             text=text_prompt,
@@ -145,11 +136,7 @@ def get_vlm_score(image_path, text_prompt="real product"):
             return_tensors="pt",
             padding=True
         )
-        
-        # Create classifier wrapper
         model = CLIPClassifier(clip_model)
-        
-        # Get prediction
         with torch.no_grad():
             outputs = model(
                 inputs["input_ids"],
@@ -158,37 +145,57 @@ def get_vlm_score(image_path, text_prompt="real product"):
             )
             scores = torch.softmax(outputs, dim=1)
             vlm_score = scores[0][1].item()  # Probability of being authentic
-            
         return vlm_score
     except Exception as e:
         print(f"VLM processing error: {e}")
         return 0.5  # Default neutral score
 
-# Apply VLM scoring to products with images
-# Note: This is a placeholder - in real implementation, you would have image paths
-dfmain['vlm_score'] = 0.5  # Default neutral score for products without images
-# For products with images: dfmain['vlm_score'] = dfmain['image_path'].apply(get_vlm_score)
+# Apply VLM scoring to products with images if image_path column exists
+if 'image_path' in dfmain.columns:
+    dfmain['vlm_score'] = dfmain['image_path'].apply(lambda x: get_vlm_score(x) if pd.notnull(x) else 0.5)
+else:
+    dfmain['vlm_score'] = 0.5  # Default neutral score for products without images
 
 # Save VLM scores
 dfmain['vlm_score'].to_csv('vlm_scores.csv')
 
-#=======================Parameter E: LLAMA-2 INTEGRATION===================================#
-# Llama-2 Large Language Model integration for advanced text analysis
+#=======================Parameter E: Time Series Spam Review Detection==================#
+def detect_spam_reviews(df, time_col='reviewTime', user_col='reviewerID', threshold_seconds=60):
+    """
+    Flags reviews as spam if the same user posts multiple reviews for the same product within a short time window.
+    Adds a 'spam_flag' column: 1 if spam, 0 otherwise.
+    """
+    if time_col not in df.columns or user_col not in df.columns:
+        df['spam_flag'] = 0
+        return df
 
+    df = df.sort_values([user_col, time_col])
+    df['reviewTime_dt'] = pd.to_datetime(df[time_col], errors='coerce')
+    df['prev_review_time'] = df.groupby(user_col)['reviewTime_dt'].shift(1)
+    df['time_diff'] = (df['reviewTime_dt'] - df['prev_review_time']).dt.total_seconds()
+    df['spam_flag'] = ((df['time_diff'] < threshold_seconds) & (df['time_diff'].notnull())).astype(int)
+    df = df.drop(['reviewTime_dt', 'prev_review_time', 'time_diff'], axis=1)
+    return df
+
+dfmain = detect_spam_reviews(dfmain)
+
+spam_weight = 0.10
+if 'spam_flag' in dfmain.columns:
+    dfmain['spam_penalty'] = dfmain['spam_flag'] * spam_weight
+else:
+    dfmain['spam_penalty'] = 0
+
+#=======================Parameter F: LLAMA-2 INTEGRATION===================================#
 def setup_llama_model():
     """
     Setup Llama-2 model for fine-tuning and inference
     """
     MODEL_CHECKPOINT = "meta-llama/Llama-2-7b-hf"
-    
     try:
         tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
         model = AutoModelForSequenceClassification.from_pretrained(MODEL_CHECKPOINT, num_labels=2)
-        
-        # Add padding token if not present
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
-            
         return tokenizer, model
     except Exception as e:
         print(f"Llama-2 model loading error: {e}")
@@ -200,7 +207,6 @@ def get_llama_score(text, tokenizer, model):
     Returns a score between 0 and 1, where 1 indicates authentic content
     """
     try:
-        # Prepare input
         inputs = tokenizer(
             text, 
             return_tensors='pt', 
@@ -208,22 +214,16 @@ def get_llama_score(text, tokenizer, model):
             truncation=True, 
             padding=True
         )
-        
-        # Get prediction
         with torch.no_grad():
             outputs = model(**inputs)
             scores = torch.softmax(outputs.logits, dim=1)
             llama_score = scores[0][1].item()  # Probability of being authentic
-            
         return llama_score
     except Exception as e:
         print(f"Llama-2 processing error: {e}")
         return 0.5  # Default neutral score
 
-# Initialize Llama-2 model
 llama_tokenizer, llama_model = setup_llama_model()
-
-# Apply Llama-2 scoring to reviews
 if llama_model is not None:
     dfmain['llama_score'] = dfmain['review'].apply(
         lambda x: get_llama_score(x, llama_tokenizer, llama_model)
@@ -231,17 +231,16 @@ if llama_model is not None:
 else:
     dfmain['llama_score'] = 0.5  # Default neutral score if model not available
 
-# Save Llama-2 scores
 dfmain['llama_score'].to_csv('llama_scores.csv')
 
 #======================================Main Function===========================================#
 
 weights = {
-    'verification_check' : 0.25,   
-    'Sentiment_Score' : 0.15,
-    'Helpful_Score' : 0.15,
-    'vlm_score' : 0.20,
-    'llama_score' : 0.25
+    'verification_check' : 0.22,   
+    'Sentiment_Score' : 0.13,
+    'Helpful_Score' : 0.13,
+    'vlm_score' : 0.18,
+    'llama_score' : 0.24
 }
 
 dfmain['FINAL_SCORE'] = (
@@ -249,7 +248,8 @@ dfmain['FINAL_SCORE'] = (
     vaders_result['normalized_sentiment_score'] * weights['Sentiment_Score'] +
     dfmain['helpful_score'] * weights['Helpful_Score'] +
     dfmain['vlm_score'] * weights['vlm_score'] +
-    dfmain['llama_score'] * weights['llama_score']
+    dfmain['llama_score'] * weights['llama_score'] -
+    dfmain['spam_penalty']
 )
 
 # Save final results
@@ -262,6 +262,7 @@ print(f"Products flagged as potentially fake: {(dfmain['FINAL_SCORE'] > 0.7).sum
 
 #=======================Flask API Setup===========================================#
 
+from flask import Flask, jsonify
 app = Flask(__name__)
 CORS(app)
 
@@ -273,7 +274,7 @@ def index():
 def analyze_product(product_id):
     if product_id < len(dfmain):
         product = dfmain.iloc[product_id]
-        return {
+        return jsonify({
             'product_id': product_id,
             'review': product['review'],
             'final_score': float(product['FINAL_SCORE']),
@@ -281,10 +282,11 @@ def analyze_product(product_id):
             'llama_score': float(product['llama_score']),
             'verification_score': float(verified.iloc[product_id]['invert_verification_score']),
             'sentiment_score': float(vaders_result.iloc[product_id]['normalized_sentiment_score']),
-            'helpful_score': float(product['helpful_score'])
-        }
+            'helpful_score': float(product['helpful_score']),
+            'spam_flag': int(product['spam_flag']) if 'spam_flag' in product else 0
+        })
     else:
-        return {'error': 'Product ID not found'}, 404
+        return jsonify({'error': 'Product ID not found'}), 404
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    app.run(debug=True, host='0.0.0.0', port=5000)
