@@ -1,4 +1,3 @@
-# Amazon_Adam
 # Amazon Product Authenticity Detection System
 
 ## 🚀 Project Overview
@@ -314,6 +313,49 @@ Ensure you have the required dataset files:
 - final_dataset.csv: Main dataset with product reviews and metadata
 - authenticity_score.csv: Pre-computed authenticity scores
 - Classifier_dataset.csv: Training dataset for classifiers
+
+### 5. Dataset Description
+
+#### Review Dataset Overview
+The system uses a comprehensive dataset containing Amazon product reviews and metadata for authenticity detection:
+
+**final_dataset.csv** - Main Dataset:
+- *Size*: Contains thousands of product reviews
+- *Columns*: 
+  - review: Full review text content
+  - verified: Purchase verification status (0/1)
+  - helpful: Number of helpful votes
+  - ratings: Star ratings (1-5)
+  - date: Review submission date
+  - by: Reviewer name
+  - review_bold: Review summary/title
+
+**Classifier_dataset.csv** - Training Dataset:
+- *Purpose*: Model training and validation
+- *Columns*:
+  - text_: Review text for classification
+  - label_num: Binary labels (0 = authentic, 1 = fake)
+- *Split*: Used for training LLaMA-2 models
+
+**Real Fake Product Dataset** -Vlm Training Dataset
+- *Purpose*: vlm training and validation
+- *Columns*:
+    - file: Link to image
+    - label: Binary labels (0 = authentic, 1 = fake)
+  
+
+**authenticity_score.csv** - Pre-computed Scores:
+- *Purpose*: Baseline authenticity scores
+- *Usage*: Reference for model comparison and validation
+
+
+
+#### Dataset Characteristics
+- *Multi-brand Coverage*: Reviews from various product categories
+- *Balanced Classes*: Mix of authentic and potentially fake reviews
+- *Rich Metadata*: Includes verification status, helpfulness, ratings
+- *Temporal Data*: Reviews span multiple time periods
+- *Quality Indicators*: Helpful votes and verification status for quality assessment
 
 ## 🏃‍♂ Running the Application
 
