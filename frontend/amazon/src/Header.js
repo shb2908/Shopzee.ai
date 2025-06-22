@@ -10,6 +10,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import Button from "@mui/material/Button";
 import { styled, alpha } from "@mui/material/styles";
+import { Link } from "react-router-dom";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -101,6 +102,14 @@ function Header() {
               <ShoppingBasketIcon />
             </Badge>
           </IconButton>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Link to="/dashboard" style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}>
+            Dashboard
+          </Link>
+          <Link to="/orders" style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}>
+            Orders
+          </Link>
         </Box>
       </Toolbar>
     </AppBar>

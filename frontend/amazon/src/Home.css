@@ -13,9 +13,9 @@
 }
 
 .home-image {
-  width: 100vw;
+  width: 170vw;
   max-width: 1600px;
-  height: 420px;
+  height: 490px;
   object-fit: cover;
   border-radius: 0 0 32px 32px;
   box-shadow: 0 8px 32px 0 rgba(44, 62, 80, 0.10);

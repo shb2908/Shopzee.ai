@@ -8,6 +8,7 @@ import SerialVerification from "./SerialVerification.js";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
+import Dashboard from "./component/Dashboard";
 
 function App() {
   const [data, setData] = useState([]);
@@ -31,6 +32,8 @@ function App() {
       <Container maxWidth="md">
         <Box className="app" sx={{ mt: 4 }}>
           <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route
               path="/serial-verification/:Unique_product_id"
               element={<SerialVerification />}
@@ -39,7 +42,6 @@ function App() {
               path="/product/:Unique_product_id"
               element={<Productlisting Data={data} />}
             />
-            <Route path="/" element={<Home />} />
           </Routes>
         </Box>
       </Container>
