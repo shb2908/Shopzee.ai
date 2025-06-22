@@ -10,98 +10,99 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 function Productlisting() {
   const { Unique_product_id } = useParams();
   const navigate = useNavigate();
-  const [products, setProducts] = useState(null);
-  const [sortedReviews, setSortedReviews] = useState([]);
-  const [isSorted, setIsSorted] = useState(false);
-  const [isFiltered, setIsFiltered] = useState(false);
 
+  /* ---------------- state ---------------- */
+  const [productDocs, setProductDocs] = useState(null); // API payload (array)
+  const [reviews, setReviews]         = useState([]);   // original order
+  const [view, setView]               = useState([]);   // list shown
+  const [isSorted, setIsSorted]       = useState(false);
+  const [isFiltered, setIsFiltered]   = useState(false);
+
+  /* hard-coded names for the demo header */
   const productList = [
     { id: "0", name: "In Ear Black-Red Earphones" },
     { id: "1", name: "In Ear Earphones Black-Green" },
     { id: "2", name: "Amazon Basics E-300 Headphones" },
-    { id: "3", name: "Xu Direct In Line Headphones" },
+    { id: "3", name: "Xu Direct In-Line Headphones" },
     { id: "4", name: "Portable Sub-Woofer" },
     { id: "5", name: "Amazon Fire TV Stick" },
   ];
 
+  /* ---------------- fetch ---------------- */
   useEffect(() => {
     fetch(`http://localhost:8000/products/${Unique_product_id}`)
-      .then((response) => response.json())
+      .then((res) => res.json())
       .then((data) => {
-        setProducts(data);
-        setSortedReviews(data);
+        setProductDocs(data);  // first element = product summary
+        setReviews(data);      // keep as canonical order
+        setView(data);         // initial list on screen
       })
-      .catch((error) => console.error("Error fetching data:", error));
+      .catch((err) => console.error("Error fetching data:", err));
   }, [Unique_product_id]);
 
-  const sortReviewsByTrustIndex = () => {
+  /* ---------------- helpers ---------------- */
+  const trustIndex = (doc) => 100 - doc.FINAL_SCORE; // higher = better
+
+  /** toggle sort by trust-index (desc) */
+  const toggleSort = () => {
     if (isSorted) {
-      setSortedReviews(products);
-      setIsSorted(false);
+      const base = isFiltered ? reviews.filter((r) => trustIndex(r) >= 25) : reviews;
+      setView(base);
     } else {
-      const sorted = [...sortedReviews].sort(
-        (a, b) => 100 - b.FINAL_SCORE - (100 - a.FINAL_SCORE)
-      );
-      setSortedReviews(sorted);
-      setIsSorted(true);
+      setView([...view].sort((a, b) => trustIndex(b) - trustIndex(a)));
     }
+    setIsSorted(!isSorted);
   };
 
-  const removeLowTrustIndexReviews = () => {
+  /** toggle "trusted reviews only" (TI ≥ 25) */
+  const toggleFilter = () => {
     if (isFiltered) {
-      setSortedReviews(products);
-      setIsFiltered(false);
+      const base = [...reviews];
+      setView(isSorted ? base.sort((a, b) => trustIndex(b) - trustIndex(a)) : base);
     } else {
-      const filtered = sortedReviews.filter(
-        (review) => 100 - review.FINAL_SCORE >= 25
-      );
-      setSortedReviews(filtered);
-      setIsFiltered(true);
+      setView(view.filter((r) => trustIndex(r) >= 25));
     }
+    setIsFiltered(!isFiltered);
   };
 
-  if (!products) {
+  const handleSerialVerification = () =>
+    navigate(`/serial-verification/${Unique_product_id}`);
+
+  const renderStars = (n) => (
+    <span className="premium-stars">
+      {[...Array(5)].map((_, i) =>
+        i < n ? (
+          <StarIcon key={i} style={{ color: "#FFD700", fontSize: 22 }} />
+        ) : (
+          <StarBorderIcon key={i} style={{ color: "#FFD700", fontSize: 22 }} />
+        )
+      )}
+    </span>
+  );
+
+  /* ---------------- loading ---------------- */
+  if (!productDocs) {
     return (
       <div className="product-listing loading-premium">
-        <div className="premium-loader"></div>
-        <span>Loading premium experience...</span>
+        <div className="premium-loader" />
+        <span>Loading premium experience…</span>
       </div>
     );
   }
 
-  const isFake = products[0].Product_score > 70;
-  const product = productList.find(
-    (product) => product.id === Unique_product_id
-  );
-
-  const handleSerialNumberVerification = () => {
-    navigate(`/serial-verification/${Unique_product_id}`);
-  };
-
-  // Helper for premium rating stars
-  const renderStars = (count) => {
-    return (
-      <span className="premium-stars">
-        {[...Array(5)].map((_, i) =>
-          i < count ? (
-            <StarIcon key={i} style={{ color: "#FFD700", fontSize: 22 }} />
-          ) : (
-            <StarBorderIcon key={i} style={{ color: "#FFD700", fontSize: 22 }} />
-          )
-        )}
-      </span>
-    );
-  };
+  /* ---------------- main product header ---------------- */
+  const mainDoc = productDocs[0];
+  const isFake  = mainDoc.Product_score > 70;
+  const productName =
+    (productList.find((p) => p.id === Unique_product_id) || {}).name ||
+    "Product";
 
   return (
     <div className="product-listing">
+      {/* ---------- product info ---------- */}
       <div className="product-container">
         <div className="product-image-container">
-          <img
-            src={products[0].Photo_url}
-            alt="Product"
-            className="product-image"
-          />
+          <img src={mainDoc.Photo_url} alt="Product" className="product-image" />
           {isFake ? (
             <span className="premium-badge fake">
               <VerifiedIcon style={{ color: "#e53935", marginRight: 6 }} />
@@ -114,113 +115,90 @@ function Productlisting() {
             </span>
           )}
         </div>
+
         <div className="product-details">
-          <h1 className="premium-title">
-            {product ? product.name : "Product name not found"}
-          </h1>
+          <h1 className="premium-title">{productName}</h1>
+
           <p className="desc">
-            <strong>Description:</strong> {products[0].Description}
+            <strong>Description:</strong> {mainDoc.Description}
           </p>
           <p className="premium-price">
-            <strong>Price:</strong> ${products[0].Price}
+            <strong>Price:</strong> ${mainDoc.Price}
           </p>
+
           <p className={`prod-score ${isFake ? "fake" : ""}`}>
-            <strong>Product Trust Index:</strong>{" "}
-            {100 - products[0].Product_score}
+            <strong>Product Trust Index:</strong> {trustIndex(mainDoc)}
           </p>
+
           <div className="progress-bar-prod">
             <div
               className="progress"
               style={{
-                width: `${100 - products[0].Product_score}%`,
-                background: (() => {
-                  if (
-                    100 - products[0].Product_score >= 0 &&
-                    100 - products[0].Product_score <= 30
-                  ) {
-                    return "linear-gradient(90deg, #e53935 0%, #ffb347 100%)";
-                  } else if (
-                    100 - products[0].Product_score >= 31 &&
-                    100 - products[0].Product_score <= 69
-                  ) {
-                    return "linear-gradient(90deg, #ffb347 0%, #ffd700 100%)";
-                  } else if (
-                    100 - products[0].Product_score >= 70 &&
-                    100 - products[0].Product_score <= 100
-                  ) {
-                    return "linear-gradient(90deg, #43a047 0%, #ffd700 100%)";
-                  }
-                })(),
+                width: `${trustIndex(mainDoc)}%`,
+                background:
+                  trustIndex(mainDoc) <= 30
+                    ? "linear-gradient(90deg,#e53935 0%,#ffb347 100%)"
+                    : trustIndex(mainDoc) <= 69
+                    ? "linear-gradient(90deg,#ffb347 0%,#ffd700 100%)"
+                    : "linear-gradient(90deg,#43a047 0%,#ffd700 100%)",
               }}
-            ></div>
+            />
           </div>
-          <button
-            className="button serial"
-            onClick={handleSerialNumberVerification}
-          >
+
+          <button className="button serial" onClick={handleSerialVerification}>
             Report Fake Product
           </button>
         </div>
       </div>
+
+      {/* ---------- actions ---------- */}
       <div className="button-container">
-        <button
-          className={`button ${isSorted ? "active" : ""}`}
-          onClick={sortReviewsByTrustIndex}
-        >
+        <button className={`button ${isSorted ? "active" : ""}`} onClick={toggleSort}>
           Sort by Trust <SortIcon className="sorticon" />
         </button>
         <button
           className={`button ${isFiltered ? "active" : ""}`}
-          onClick={removeLowTrustIndexReviews}
+          onClick={toggleFilter}
         >
           Trusted Reviews only <FilterListIcon className="filtericon" />
         </button>
       </div>
+
+      {/* ---------- reviews ---------- */}
       <div className="reviews">
-        {sortedReviews.map((product) => (
-          <div key={product._id} className="product-card">
+        {view.map((rev) => (
+          <div key={rev._id} className="product-card">
             <div className="product-info">
               <p>
-                <strong>Review:</strong> {product.review_bold}
+                <strong>Review:</strong> {rev.review_bold}
               </p>
-              <p>{product.review}</p>
+              <p>{rev.review}</p>
               <p>
-                <strong>Rating:</strong> {renderStars(product.ratings)}
-              </p>
-              <p>
-                <strong>Review by:</strong> {product.by} on {product.date}
+                <strong>Rating:</strong> {renderStars(rev.ratings)}
               </p>
               <p>
-                <strong>Helpful Votes:</strong> {product.helpful}
+                <strong>Review by:</strong> {rev.by} on {rev.date}
+              </p>
+              <p>
+                <strong>Helpful Votes:</strong> {rev.helpful}
               </p>
               <p className="rev-score">
-                <strong>Review Trust Index:</strong> {100 - product.FINAL_SCORE}
+                <strong>Review Trust Index:</strong> {trustIndex(rev)}
               </p>
+
               <div className="progress-bar">
                 <div
                   className="progress"
                   style={{
-                    width: `${100 - product.FINAL_SCORE}%`,
-                    background: (() => {
-                      if (
-                        100 - product.FINAL_SCORE >= 0 &&
-                        100 - product.FINAL_SCORE <= 25
-                      ) {
-                        return "linear-gradient(90deg, #e53935 0%, #ffb347 100%)";
-                      } else if (
-                        100 - product.FINAL_SCORE >= 26 &&
-                        100 - product.FINAL_SCORE <= 74
-                      ) {
-                        return "linear-gradient(90deg, #ffb347 0%, #ffd700 100%)";
-                      } else if (
-                        100 - product.FINAL_SCORE >= 75 &&
-                        100 - product.FINAL_SCORE <= 100
-                      ) {
-                        return "linear-gradient(90deg, #43a047 0%, #ffd700 100%)";
-                      }
-                    })(),
+                    width: `${trustIndex(rev)}%`,
+                    background:
+                      trustIndex(rev) <= 25
+                        ? "linear-gradient(90deg,#e53935 0%,#ffb347 100%)"
+                        : trustIndex(rev) <= 74
+                        ? "linear-gradient(90deg,#ffb347 0%,#ffd700 100%)"
+                        : "linear-gradient(90deg,#43a047 0%,#ffd700 100%)",
                   }}
-                ></div>
+                />
               </div>
             </div>
           </div>

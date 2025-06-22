@@ -1,22 +1,27 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser"); // Import cookie-parser for handling cookies
+const userRoutes = require("./routes/userRoutes"); // Import user routes
 
 const app = express();
 const port = 8000;
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser()); // Use cookie-parser middleware
 
 // Updated MongoDB connection string with database name
 mongoose
   .connect(
-    "mongodb+srv://user_amazon:Sohamshb%4091@cluster0.swa3k.mongodb.net/amazon?retryWrites=true&w=majority",
+    "mongodb+srv://user_amazon:Sohamshb%4091@cluster0.swa3k.mongodb.net/amazon?retryWrites=true&w=majority"
   )
   .then(() => console.log("MongoDB connection successful"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Schema definition
+app.use("/api/users", userRoutes); 
+
+// Schema definition for products
 const productSchema = new mongoose.Schema({
   Product_link: String,
   Photo_url: String,
@@ -47,13 +52,20 @@ app.get("/products", async (req, res) => {
   }
 });
 
+// Route to get a product by Unique_product_id
 app.get("/products/:Unique_product_id", async (req, res) => {
   const Unique_product_id = req.params.Unique_product_id;
 
-  const products = await Product.find({ Unique_product_id });
-
-  res.json(products);
+  try {
+    const products = await Product.find({ Unique_product_id });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
+
+// Use user routes for user management
+app.use("/api/users", userRoutes); // Mount user routes under /api/users
 
 // Start the server
 app.listen(port, () => {
