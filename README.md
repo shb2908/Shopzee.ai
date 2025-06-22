@@ -1,2 +1,2 @@
-# Amazon_Adam
-Our project
+## Amazon_Hackon (Team Adam)
+
