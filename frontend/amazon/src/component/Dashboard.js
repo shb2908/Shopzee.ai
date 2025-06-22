@@ -15,154 +15,119 @@ import {
   Cell,
 } from 'recharts';
 import './Dashboard.css';
+import { AiOutlineUser, AiOutlineWarning, AiFillAlert, AiOutlineFlag } from 'react-icons/ai';
 
 function Dashboard() {
-  const data = [
-    {
-      name: 'Product 1',
-      percentReduced: 20,
-    },
-    {
-      name: 'Product 2',
-      percentReduced: 60,
-    },
-    {
-      name: 'Product 3',
-      percentReduced: 25,
-    },
-    {
-      name: 'Product 4',
-      percentReduced: 100,
-    },
-    {
-      name: 'Product 5',
-      percentReduced: 50,
-    },
-    {
-      name: 'Product 6',
-      percentReduced: 60,
-    },
-    {
-      name: 'Product 7',
-      percentReduced: 80,
-    },
+  /* ──────────────────────────────────────────────────────────
+     Synthetic data – replace with real API calls when ready
+     ──────────────────────────────────────────────────────────*/
+  const summary = {
+    total: 1580,
+    suspected: 130,
+    confirmed: 42,
+    reports: 450,
+  };
+
+  const trendData = [
+    { month: 'Jan', suspected: 10, confirmed: 2 },
+    { month: 'Feb', suspected: 20, confirmed: 4 },
+    { month: 'Mar', suspected: 25, confirmed: 6 },
+    { month: 'Apr', suspected: 18, confirmed: 5 },
+    { month: 'May', suspected: 22, confirmed: 8 },
+    { month: 'Jun', suspected: 30, confirmed: 10 },
+    { month: 'Jul', suspected: 28, confirmed: 7 },
+    { month: 'Aug', suspected: 35, confirmed: 9 },
+    { month: 'Sep', suspected: 40, confirmed: 12 },
+    { month: 'Oct', suspected: 38, confirmed: 11 },
+    { month: 'Nov', suspected: 45, confirmed: 14 },
+    { month: 'Dec', suspected: 50, confirmed: 16 },
   ];
 
-  const pieChartData = [
-    { name: '1 Leaf', value: 20 },
-    { name: '2 Leaf', value: 20 },
-    { name: '3 Leaf', value: 20 },
-    { name: '4 Leaf', value: 20 },
-    { name: '5 Leaf', value: 20 },
+  const distributionData = [
+    { name: 'Legitimate', value: summary.total - (summary.suspected + summary.confirmed) },
+    { name: 'Suspected', value: summary.suspected },
+    { name: 'Confirmed', value: summary.confirmed },
   ];
 
-  const COLORS = ['#AADB08', '#8AE804', '#64CF04', '#03BB03', '#008000'];
-
-  const BADGEIMG = [
-    "../images/badge1.png",
-    "../images/badge2.png",
-    "../images/badge3.png",
-    "../images/badge4.png",
-    "../images/badge5.png"
-  ]
+  const DIST_COLORS = ['#00b894', '#fdcb6e', '#d63031'];
 
   return (
     <div className="main-container">
       <div className="main-title">
-        <h2 className="dashboard_text">DASHBOARD</h2>
+        <h2 className="dashboard_text">Spam-Account Monitoring</h2>
       </div>
 
-      <div className="container">
-        <div className="main-cards">
-          <div className="card">
-            <div className="card-inner">
-              <h3 className="box_title">Carbon Emission Reduced (in KGs)</h3>
-              <img className="card_icon" src="../images/co2badge.png" alt="Emissions Icon" />
-            </div>
-            <h1>23</h1>
+      {/* ── Summary cards ───────────────────────────────── */}
+      <div className="main-cards">
+        <div className="card">
+          <div className="card-inner">
+            <h3 className="box_title">Total Users</h3>
+            <AiOutlineUser className="card_icon" />
           </div>
-
-          <div className="card">
-            <div className="card-inner">
-              <h3 className="box_title">Green Bits</h3>
-              <img className="card_icon" src="../images/GreenBit.png" alt="Greenbits Icon" />
-            </div>
-            <h1>13</h1>
-          </div>
-          <div className="card">
-            <div className="card-inner">
-              <h3 className="box_title">Your Offers</h3>
-              <img className="card_icon" src="../images/voucher.png" alt="Offers Icon" />
-            </div>
-          </div>
+          <h1>{summary.total}</h1>
         </div>
 
-        <div className="charts">
-          <div className="card">
-            <div className="card-inner">
-              <h3 className="box_title">Products of different badges</h3>
-            </div>
-            <div className='pie_and_label'>
-              <ResponsiveContainer width="80%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={pieChartData}
-                    cx="50%"
-                    cy="50%"
-                    startAngle={0}
-                    endAngle={360}
-                    outerRadius={100}
-                    dataKey="value"
-                    stroke="#008000"
-                  >
-                    {pieChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="labels">
-                <div className='label_texts'>
-                {pieChartData.map((entry, index) => (
-                  <div key={`label-${index}`} className="label">
-                    {/* <img className="label-color" src = {BADGEIMG[index % BADGEIMG.length]}></img> */}
-                    <span className="label-color" style={{ backgroundColor: COLORS[index % COLORS.length]}}></span>
-                    <span>{entry.name}</span>
-                  </div>
-                ))}
-                </div>
-              </div>
-            </div>
+        <div className="card">
+          <div className="card-inner">
+            <h3 className="box_title">Suspected Spammers</h3>
+            <AiOutlineWarning className="card_icon" />
           </div>
+          <h1>{summary.suspected}</h1>
+        </div>
 
-          <div className="graph-card">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart
-                width={500}
-                height={300}
-                data={data}
-                margin={{
-                  top: 5,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => `${value}%`} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="percentReduced"
-                  name="% Plastic Reduced Per Item"
-                  stroke="#82ca9d"
-                  activeDot={{ r: 8 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+        <div className="card">
+          <div className="card-inner">
+            <h3 className="box_title">Confirmed Spammers</h3>
+            <AiFillAlert className="card_icon" />
           </div>
+          <h1>{summary.confirmed}</h1>
+        </div>
+
+        <div className="card">
+          <div className="card-inner">
+            <h3 className="box_title">Spam Reports</h3>
+            <AiOutlineFlag className="card_icon" />
+          </div>
+          <h1>{summary.reports}</h1>
+        </div>
+      </div>
+
+      {/* ── Charts ─────────────────────────────────────── */}
+      <div className="charts">
+        {/* Trend line chart */}
+        <div className="card graph-card">
+          <div className="card-inner">
+            <h3 className="box_title">Monthly Spam Trend</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="suspected" name="Suspected" stroke="#fdcb6e" />
+              <Line type="monotone" dataKey="confirmed" name="Confirmed" stroke="#d63031" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Distribution pie chart */}
+        <div className="card">
+          <div className="card-inner">
+            <h3 className="box_title">Current Distribution</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={distributionData} dataKey="value" outerRadius={120} stroke="#fff">
+                {distributionData.map((entry, index) => (
+                  <Cell key={`slice-${index}`} fill={DIST_COLORS[index]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
