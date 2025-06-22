@@ -1,70 +1,67 @@
-# Getting Started with Create React App
+### Implementation Details
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+1.
+2.
+3. #Backend : Our Backend server follows a modular Node.js/Express architecture with MongoDB as the primary database,designed for an Amazon product authenticity detection platform with user management and product review analysis capabilities.
 
-## Available Scripts
+backend/
+├── server.js           # Main application entry point
+├── db.js              # Database connection utility (unused in current setup)
+├── package.json       # Dependencies and project metadata
+├── insertProducts.js  # Data seeding script
+├── routes/            # API endpoint definitions
+│   └── userRoutes.js  # User management endpoints
+├── models/            # Database schemas
+│   └── userModel.js   # User data model
+└── middleware/        # Custom middleware functions
+    └── authware.js    # Authentication middleware
 
-In the project directory, you can run:
+Two main collections:
+users - User accounts with balance tracking
+amazon - Product reviews with authenticity scores
 
-### `npm start`
+{
+  Product_link: String,
+  Photo_url: String,
+  Description: String,
+  Unique_product_id: String,    // Product identifier
+  Price: Number,
+  Product_score: Number,        // Authenticity score
+  review_bold: String,          // Review headline
+  ratings: Number,              // Star rating (1-5)
+  review: String,               // Full review text
+  verified: Boolean,            // Verified purchase
+  date: String,                 // Review date
+  by: String,                   // Reviewer name
+  helpful: Number,              // Helpfulness votes
+  FINAL_SCORE: Number          // Computed authenticity score
+}
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Product Authenticity Detection - Uses ML-generated scores
+Review Analysis - Trust index calculation based on multiple factors
+User Balance System - Virtual currency for platform interactions
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+4. Frontend : an Amazon-inspired e-commerce interface with advanced product authenticity detection capabilities. The application follows a component-based architecture with Material-UI for modern styling.
 
-### `npm test`
+src/
+├── App.js                 # Main router & layout orchestrator
+├── Header.js             # Navigation bar with search
+├── Home.js               # Landing page with product grid
+├── Product.js            # Product card component
+├── Productlisting.js     # Detailed product view with reviews
+├── SerialVerification.js # Fake product reporting system
+├── ItemSearchBar.js      # Advanced search functionality
+└── [Component].css       # Component-specific styling
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Real-time authenticity scoring with visual indicators
+-> color-coded trust bars (red/yellow/green gradient)
+->Fake product flagging with prominent warnings
+-> ML-powered scoring integration from backend
+Trust-based review sorting (most to least trustworthy)
+->Trusted reviews filtering (≥25% trust threshold)
+->Interactive toggle controls with active states
+->Star rating visualization with Material-UI icons
 
-### `npm run build`
+5. Dataset files 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
