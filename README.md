@@ -103,8 +103,9 @@ FINAL_SCORE = (
   - CLIPClassifier wrapper with classification head
   - Multi-brand support (Nike, Adidas, Fila, Puma)
   - GPU acceleration support
-  - Learning rate: 5e-5
-  - Batch size: 16
+  - Learning rate: 1e-6
+  - Batch size: 32
+  - Learning rate scheduler: cosine
   - Epochs: 100
 
 ### 2. LLaMA-2 Training (llama_training.py)
