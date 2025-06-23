@@ -39,6 +39,13 @@ const productSchema = new mongoose.Schema({
   FINAL_SCORE: Number,
 });
 
+// weights = {
+//   'verification_check' : 0.25,   
+//   'Sentiment_Score' : 0.15,      # VADER sentiment analysis
+//   'Helpful_Score' : 0.15,
+//   'vlm_score' : 0.20,
+//   'llama_score' : 0.25           # LLaMA-2 text analysis
+// }
 // Explicitly specifying the collection name
 const Product = mongoose.model("Product", productSchema, "amazon");
 
